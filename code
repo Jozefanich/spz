@@ -1,0 +1,22 @@
+#include <ntddk.h> 
+#include <wdm.h>
+void SampleUnload(_In_ PDRIVER_OBJECT DriverObject) {
+	UNREFERENCED_PARAMETER(DriverObject);
+	KdPrint(("Sample driver Unload called\n"));
+}
+extern "C"
+NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject,
+	_In_ PUNICODE_STRING RegistryPath) {
+	UNREFERENCED_PARAMETER(RegistryPath);
+	DriverObject->DriverUnload = SampleUnload;
+	RTL_OSVERSIONINFOW info;
+	RtlZeroMemory(&info, sizeof(RTL_OSVERSIONINFOW));
+	info.dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOW);
+	NTSTATUS status = RtlGetVersion(&info);
+	if (NT_SUCCESS(status)) {
+		KdPrint(("Build: %lu\nMajorVer: %lu\nMinorVer: %lu\nPlatformID: %lu\n", info.dwBuildNumber, info.dwMajorVersion, info.dwMinorVersion, info.dwPlatformId));
+	}
+	else KdPrint(("Error"));
+	KdPrint(("Sample driver initialized successfully\n"));
+	return STATUS_SUCCESS;
+}
